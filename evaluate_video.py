@@ -1,8 +1,10 @@
 import cv2
 import torch
+import os
 import xml.etree.ElementTree as ET
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from pathlib import Path
 
 def load_trained_model(weights_path, num_classes=2):
     model = fasterrcnn_resnet50_fpn(weights=None)
@@ -136,22 +138,20 @@ def evaluate_video(model, video_path, strike_zone_xml, output_path, confidence_t
     print(f"Annotated video saved here: {output_path}")
 
 if __name__ == "__main__":
-    from pathlib import Path
-
     PROJECT_ROOT = Path(__file__).resolve().parent
     
-    model_weights = PROJECT_ROOT / 'baseball_weights_throwaway.pth' 
+    model_weights = PROJECT_ROOT / 'bball_frcnn.pth' 
     trained_model = load_trained_model(str(model_weights))
 
-    #UPDATE THIS PATH TO WHEREVER YOU HAVE VIDEOS DOWNLOADED
-    input_video = r''
+    #UPDATE THIS PATH TO WHICHEVER VIDEO YOU WANT EVALUATED
+    input_video = PROJECT_ROOT / "Baseball Videos" / "IMG_0030.mov"
+    vid_name = os.path.splitext(os.path.basename(input_video))[0]
 
     if input_video == '':
         print("Hey! Please add your local video path to the 'input_video' variable.")
-    
     else:
-
-    #Find the SZone file in the "30 to 39" folder 
+        #Find the SZone file in the "30 to 39" folder 
+        ## UPDATE PATH IF USING SZone ANNOTATIONS FOR ANOTHER GROUPING.
         annotation_folder = PROJECT_ROOT / "Baseball Annotations" / "30 to 39"
         szone_files = list(annotation_folder.glob("*SZone.xml"))
         
@@ -163,7 +163,7 @@ if __name__ == "__main__":
             #Setup output path
             output_dir = PROJECT_ROOT / "Output"
             output_dir.mkdir(exist_ok=True)
-            output_video = str(output_dir / 'annotated_IMG_0031.mp4')
+            output_video = str(output_dir / f'{vid_name}_annotated.mp4')
             
             #Evaluate
             print(f"Evaluating {input_video}...")
